@@ -3,10 +3,6 @@
   file: dest=/var/cache/neutron/api owner=neutron state=directory
 
 - name: set ml2 config path
-  set_fact: neutron_plugin_config=/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
-  when: neutron.plugin == 'ovs'
-
-- name: set ovs config path
   set_fact: neutron_plugin_config=/etc/neutron/plugins/ml2/ml2_plugin.ini
   when: neutron.plugin == 'ml2'
 

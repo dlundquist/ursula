@@ -84,13 +84,6 @@
     - role: memcached
       tags: ['infra']
 
-- name: openvswitch
-  hosts: network:compute
-  roles:
-    - role: openvswitch
-      when: neutron.plugin == 'ovs'
-      tags: ['infra', 'data', 'openvswitch']
-
 - name: controller haproxy
   gather_facts: force
   hosts: controller
@@ -266,13 +259,6 @@
   roles:
     - role: 'openstack-network'
       tags: ['openstack', 'setup', 'openstack-network']
-
-- name: extra neutron setup
-  hosts: network:compute
-  tasks:
-    - name: restart neutron-openvswitch-agent to ensure VXLAN mesh is configured
-      service: name=neutron-openvswitch-agent state=restarted
-      when: neutron.plugin == 'ovs'
 
 - name: cleanup ansible proxy
   hosts: all

@@ -10,12 +10,6 @@
 
 - include: dnsmasq.yml
 
-- name: ensure ovs br-ex bridge present
-  ovs_bridge: name=br-ex state=present
-  when: neutron.plugin == 'ovs'
-  notify:
-    - ifup br-ex
-
 - include: igmp-router.yml
   when: neutron.plugin == 'ml2' and 'vxlan' in neutron.tunnel_types
 
@@ -30,10 +24,6 @@
   changed_when: false
   failed_when: iproute_out.rc == 255
   when: "'vxlan' in neutron.tunnel_types"
-
-- name: set ovs data path agent fact
-  set_fact: neutron_data_path_agent=neutron-openvswitch-agent
-  when: neutron.plugin == 'ovs'
 
 - name: set ml2 data path agent fact
   set_fact: neutron_data_path_agent=neutron-linuxbridge-agent
