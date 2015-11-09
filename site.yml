@@ -355,13 +355,6 @@
       tags: ['openstack-setup', 'openstack', 'setup']
   environment: "{{ env_vars|default({}) }}"
 
-- name: openstack network setup
-  hosts: network
-  roles:
-    - role: 'openstack-network'
-      tags: ['openstack', 'setup', 'openstack-network']
-  environment: "{{ env_vars|default({}) }}"
-
 - name: extra neutron setup
   hosts: network:compute
   tasks:
