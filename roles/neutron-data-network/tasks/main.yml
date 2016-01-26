@@ -32,26 +32,6 @@
   failed_when: iproute_out.rc == 255
   when: "'vxlan' in neutron.tunnel_types"
 
-- name: install neutron-data-network services
-  upstart_service:
-    name: "{{ item.key }}"
-    user: neutron
-    cmd: "/usr/local/bin/{{ item.key }}"
-    pidfile: "{{ item.value.pidfile|default(omit) }}"
-    start_on: "starting neutron-linuxbridge-agent"
-    stop_on: "stopping neutron-linuxbridge-agent"
-    config_dirs: /etc/neutron
-    config_files: /etc/neutron/neutron.conf,{{ item.value.config_files }}
-    envs: "{{ neutron.service.envs }}"
-  with_dict:
-    neutron-dhcp-agent:
-      config_files: /etc/neutron/dhcp_agent.ini
-    neutron-l3-agent:
-      config_files: /etc/neutron/l3_agent.ini
-      pidfile: /var/run/enutron-l3-agent.pid
-    neutron-metadata-agent:
-      config_files: /etc/neutron/metadata_agent.ini
-
 - name: neutron lbaas config
   template:
     src: etc/neutron/neutron_lbaas.conf
@@ -74,41 +54,24 @@
   notify:
     - restart neutron lbaas agent
 
-- name: install neutron lbaas service
+- name: install neutron-data-network services
   upstart_service:
     name: "{{ item.key }}"
     user: neutron
-    cmd: "/usr/local/bin/{{ item.key }}"
-    pidfile: "{{ item.value.pidfile|default(omit) }}"
     start_on: "starting neutron-linuxbridge-agent"
     stop_on: "stopping neutron-linuxbridge-agent"
+    cmd: "/usr/local/bin/{{ item.key }}"
+    pidfile: "{{ item.value.pidfile|default(omit) }}"
     config_dirs: /etc/neutron
-    config_files: "{{ item.value.config_files|join(',') }}"
+    config_files: /etc/neutron/neutron.conf,{{ item.value.config_files }}
     envs: "{{ neutron.service.envs }}"
-  when: (neutron.lbaas.enable == "smart" and
-         groups['controller'][0] not in groups['compute']) or
-         neutron.lbaas.enable|bool
-  with_dict:
-    neutron-lbaasv2-agent:
-      config_files:
-        - /etc/neutron/neutron.conf
-        - /etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
-        - /etc/neutron/neutron_lbaas.conf
+  with_dict: neutron.agents
 
 - meta: flush_handlers
 
 - name: start neutron-data-network services
-  service: name={{ item }} state=started
-  with_items:
-    - neutron-l3-agent
-    - neutron-dhcp-agent
-    - neutron-metadata-agent
-
-- name: start neutron lbaas agent
-  service: name=neutron-lbaasv2-agent state=started
-  when: (neutron.lbaas.enable == "smart" and
-         groups['controller'][0] not in groups['compute']) or
-         neutron.lbaas.enable|bool
+  service: name={{ item.key }} state=started
+  with_dict: neutron.agents
 
 - include: ipchanged.yml
 

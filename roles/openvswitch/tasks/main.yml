@@ -1,0 +1,11 @@
+---
+- name: install Open vSwitch packages
+  apt: pkg={{ item }}
+  with_items:
+    - openvswitch-datapath-dkms
+    - openvswitch-switch
+    - openvswitch-common
+    - openvswitch-ovn
+
+- name: ovs int bridge
+  openvswitch_bridge: name=br-int state=present

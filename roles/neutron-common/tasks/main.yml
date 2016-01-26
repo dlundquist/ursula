@@ -7,6 +7,7 @@
 
 - name: unload openvswitch if present
   modprobe: name=openvswitch state=absent
+  when: neutron.plugin == 'ml2'
 
 - name: blacklist openvswitch
   template: dest=/etc/modprobe.d/blacklist-openvswitch.conf
@@ -14,6 +15,7 @@
             mode=0644
             owner=root
             group=root
+  when: neutron.plugin == 'ml2'
 
 - name: configure VXLAN to use IANA assigned port 4789
   copy: content="options vxlan udp_port=4789"
@@ -96,16 +98,30 @@
     group: root
 
 - name: error for unknown plugin
-  fail: msg="Invalid Neutron plugin, must be ml2"
-  when: neutron.plugin != 'ml2'
+  fail: msg="Invalid Neutron plugin, must be either ml2 or ovn"
+  when: neutron.plugin != 'ovn' and neutron.plugin != 'ml2'
 
 - name: ml2 plugin dir
   file: dest=/etc/neutron/plugins/ml2 state=directory
+  when: neutron.plugin == 'ml2'
 
 - name: ml2 config
   template: src=etc/neutron/plugins/ml2/ml2_plugin.ini
             dest=/etc/neutron/plugins/ml2/ml2_plugin.ini
             mode=0644
+  when: neutron.plugin == 'ml2'
+  notify:
+    - restart neutron services
+
+- name: OVN plugin directory
+  file: dest=/etc/neutron/plugins/networking-ovn state=directory
+  when: neutron.plugin == 'ovn'
+
+- name: OVN plugin configuration
+  template: src=etc/neutron/plugins/networking-ovn/networking-ovn.ini
+            dest=/etc/neutron/plugins/networking-ovn/networking-ovn.ini
+            mode=0644
+  when: neutron.plugin == 'ovn'
   notify:
     - restart neutron services
 

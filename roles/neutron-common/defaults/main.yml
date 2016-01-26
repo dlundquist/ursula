@@ -121,3 +121,18 @@ neutron:
     verbose: True
   cafile: "{{ ssl.cafile|default('/etc/ssl/certs/ca-certificates.crt') }}"
   enable_external_interface: False
+  agents:
+    neutron-l3-agent:
+      config_files:
+        - /etc/neutron/l3_agent.ini
+      pidfile: /var/run/enutron-l3-agent.pid
+    neutron-dhcp-agent:
+      config_files:
+        - /etc/neutron/dhcp_agent.ini
+    neutron-metadata-agent:
+      config_files:
+        - /etc/neutron/metadata_agent.ini
+    neutron-lbaasv2-agent:
+      config_files:
+        - /etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+        - /etc/neutron/neutron_lbaas.conf

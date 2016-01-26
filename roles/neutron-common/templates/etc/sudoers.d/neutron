@@ -1,4 +1,1 @@
-neutron ALL=(root) NOPASSWD: /sbin/brctl
-neutron ALL=(root) NOPASSWD: /sbin/bridge
-neutron ALL=(root) NOPASSWD: /sbin/ip
 neutron ALL=(root) NOPASSWD: /usr/local/bin/neutron-rootwrap
